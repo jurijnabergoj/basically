@@ -80,9 +80,8 @@ export default function Home() {
 
   async function copyShare() {
     if (!topic || !result || !shareUrl) return;
-    const message = `I scored ${result.score}/100 explaining "${topic.prompt}". Bet you can't beat it.\n${shareUrl}`;
     try {
-      await navigator.clipboard.writeText(message);
+      await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } catch {
