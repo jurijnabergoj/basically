@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0b0b0c;
+  --glow: rgba(96, 165, 250, 0.08);
+  --panel: #161617;
+  --border: rgba(255, 255, 255, 0.1);
+  --hover: rgba(255, 255, 255, 0.05);
+  --text: #f5f5f5;
+  --text-body: #e7e7e7;
+  --text-muted: #a1a1aa;
+  --text-faint: #71717a;
+  --accent: #60a5fa;
+  --accent-hover: #93c5fd;
+  --accent-contrast: #071018;
+  --accent-text: #7cb0fb;
+  --accent-border: rgba(96, 165, 250, 0.25);
+  --accent-ring: rgba(96, 165, 250, 0.4);
+  --input-bg: rgba(0, 0, 0, 0.3);
+  --dial-track: #26262a;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f6f6f4;
+  --glow: rgba(59, 130, 246, 0.16);
+  --panel: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
+  --hover: rgba(0, 0, 0, 0.05);
+  --text: #141414;
+  --text-body: #27272a;
+  --text-muted: #52525b;
+  --text-faint: #a1a1aa;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-contrast: #ffffff;
+  --accent-text: #1d4ed8;
+  --accent-border: rgba(37, 99, 235, 0.3);
+  --accent-ring: rgba(37, 99, 235, 0.35);
+  --input-bg: #ffffff;
+  --dial-track: #e4e4e7;
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--bg);
+  color: var(--text-body);
+  -webkit-font-smoothing: antialiased;
+  background-image: radial-gradient(
+    70% 55% at 50% -10%,
+    var(--glow),
+    transparent 70%
+  );
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+::selection {
+  background: var(--accent-border);
+}
