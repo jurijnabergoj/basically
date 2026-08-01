@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const display = Space_Grotesk({
@@ -54,6 +55,7 @@ export default function RootLayout({
       <body className={display.className}>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         {children}
+        <Analytics />
       </body>
     </html>
   );
