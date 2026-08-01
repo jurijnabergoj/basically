@@ -17,9 +17,60 @@ function band(score: number): string {
   return "Oof";
 }
 
+// The default card shown when someone shares the home page (no result attached).
+function homeCard() {
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          backgroundColor: "#0b0b0c",
+          backgroundImage:
+            "radial-gradient(60% 60% at 50% -10%, rgba(96,165,250,0.16), transparent 70%)",
+          padding: "72px",
+          justifyContent: "space-between",
+          fontFamily: "sans-serif",
+        }}
+      >
+        <div style={{ display: "flex", fontSize: 40, fontWeight: 700, color: "#f5f5f5" }}>
+          basically
+          <span style={{ color: "#60a5fa" }}>…</span>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            fontSize: 68,
+            fontWeight: 800,
+            color: "#f5f5f5",
+            lineHeight: 1.15,
+          }}
+        >
+          <div style={{ display: "flex" }}>Do you actually know</div>
+          <div style={{ display: "flex" }}>how things work?</div>
+          <div style={{ display: "flex", fontSize: 32, fontWeight: 500, color: "#a1a1aa", marginTop: 24 }}>
+            Explain an everyday thing in 100 words. Get graded 1–100.
+          </div>
+        </div>
+
+        <div style={{ display: "flex", fontSize: 28, color: "#8a8a8f" }}>
+          Think you know more than you do?
+        </div>
+      </div>
+    ),
+    { width: 1200, height: 630 },
+  );
+}
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const share = decodeShare(searchParams.get("d") ?? "");
+  const d = searchParams.get("d");
+  const share = d ? decodeShare(d) : null;
+  if (!share) return homeCard();
 
   const score = share?.score ?? 0;
   const topic = share?.topic ?? "how something works";

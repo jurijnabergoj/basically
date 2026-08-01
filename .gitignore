@@ -26,6 +26,10 @@ yarn-error.log*
 
 # typescript
 next-env.d.ts
+tsconfig.tsbuildinfo
 
 # vercel
 .vercel
+
+# local docs / handoff notes
+/docs/
