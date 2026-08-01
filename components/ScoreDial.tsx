@@ -1,5 +1,5 @@
 export function scoreColor(score: number): string {
-  if (score >= 70) return "#22c55e"; // green-500 — readable on light + dark
+  if (score >= 70) return "#22c55e"; // green-500, readable on light + dark
   if (score >= 40) return "#f59e0b"; // amber-500
   return "#ef4444"; // red-500
 }

@@ -8,7 +8,7 @@ const display = Space_Grotesk({
 });
 
 // Set the theme before first paint to avoid a flash of the wrong theme.
-const themeScript = `(function(){try{var t=localStorage.getItem('theme');document.documentElement.dataset.theme=(t==='light'||t==='dark')?t:'dark';}catch(e){document.documentElement.dataset.theme='dark';}})();`;
+const themeScript = `(function(){try{var t=localStorage.getItem('theme');document.documentElement.dataset.theme=(t==='light'||t==='dark')?t:'light';}catch(e){document.documentElement.dataset.theme='light';}})();`;
 
 // Absolute base for resolving Open Graph / Twitter image URLs so shared links
 // unfurl correctly. Auto-detects the Vercel URL in production; override with

@@ -1,5 +1,5 @@
 // Best-effort in-memory per-IP rate limiter. This is per-server-instance and
-// resets on redeploy — plenty for a low-traffic v1 whose main goal is to stop a
+// resets on redeploy; plenty for a low-traffic v1 whose main goal is to stop a
 // single client from hammering the free Gemini quota. For heavier needs, swap
 // in a shared store (e.g. Upstash Redis).
 

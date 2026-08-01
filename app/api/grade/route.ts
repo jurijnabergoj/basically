@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   const rl = rateLimit(ip);
   if (!rl.ok) {
     return NextResponse.json(
-      { error: "You're going a bit fast — give it a moment and try again." },
+      { error: "You're going a bit fast. Give it a moment and try again." },
       { status: 429, headers: { "Retry-After": String(rl.retryAfter ?? 30) } },
     );
   }
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Never trust a client-sent prompt — look the topic up by id.
+  // Never trust a client-sent prompt; look the topic up by id.
   const topic = getTopicById(topicId);
   if (!topic) {
     return NextResponse.json({ error: "Unknown topic." }, { status: 400 });

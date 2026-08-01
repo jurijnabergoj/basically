@@ -1,5 +1,5 @@
 // Server-side grading via the Google Gemini REST API (free tier).
-// The API key never reaches the client — this module is only imported by the
+// The API key never reaches the client; this module is only imported by the
 // /api/grade route handler.
 
 export type GradeResult = {
@@ -9,12 +9,26 @@ export type GradeResult = {
   modelAnswer: string;
 };
 
+// Thrown when Gemini rejects the call. `status` mirrors the HTTP status;
+// `retryAfterSeconds` is populated for 429s (free-tier quota) so callers can
+// tell the user exactly how long to wait.
+export class GeminiError extends Error {
+  status: number;
+  retryAfterSeconds?: number;
+  constructor(status: number, message: string, retryAfterSeconds?: number) {
+    super(message);
+    this.name = "GeminiError";
+    this.status = status;
+    this.retryAfterSeconds = retryAfterSeconds;
+  }
+}
+
 const GEMINI_MODEL = "gemini-3.6-flash";
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 const SYSTEM_INSTRUCTION = `You are a rigorous but fair science and engineering explainer. You grade how well a layperson explained an everyday concept they think they understand.
 
-Reward correct mechanism and cause-and-effect. Penalize vagueness, hand-waving, merely restating the question, and wrong causation. Fluent, confident writing that lacks real mechanism should score low. Base the score ONLY on the accuracy and completeness of the underlying mechanism — not on writing polish, grammar, or length.`;
+Reward correct mechanism and cause-and-effect. Penalize vagueness, hand-waving, merely restating the question, and wrong causation. Fluent, confident writing that lacks real mechanism should score low. Base the score ONLY on the accuracy and completeness of the underlying mechanism, not on writing polish, grammar, or length.`;
 
 function buildUserPrompt(topicPrompt: string, explanation: string): string {
   return `TOPIC: ${topicPrompt}
@@ -27,7 +41,7 @@ ${explanation}
 Grade the explanation on a 1-100 scale for ACCURACY and COMPLETENESS of the underlying mechanism.
 - If the explanation is empty, nonsense, off-topic, or an obvious non-answer, score it very low (1-15).
 - "verdict": one short line (about 8-14 words) summarizing how they did.
-- "corrections": 2-4 short, specific items — key points they missed or got wrong, tied to what they actually wrote.
+- "corrections": 2-4 short, specific items covering key points they missed or got wrong, tied to what they actually wrote.
 - "modelAnswer": a correct, satisfying explanation of about 60-90 words that a curious adult would find genuinely illuminating.
 Respond ONLY with the JSON object.`;
 }
@@ -44,10 +58,24 @@ const RESPONSE_SCHEMA = {
   propertyOrdering: ["score", "verdict", "corrections", "modelAnswer"],
 };
 
+// A blank answer scores this without ever calling the API, so forfeits and
+// timeouts don't burn precious free-tier quota.
+export const EMPTY_ANSWER_RESULT: GradeResult = {
+  score: 1,
+  verdict: "No answer submitted.",
+  corrections: [],
+  modelAnswer: "",
+};
+
 export async function gradeExplanation(
   topicPrompt: string,
   explanation: string,
 ): Promise<GradeResult> {
+  // An empty answer is an automatic forfeit; don't spend an API call on it.
+  if (!explanation.trim()) {
+    return { ...EMPTY_ANSWER_RESULT };
+  }
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not set");
@@ -76,7 +104,22 @@ export async function gradeExplanation(
 
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`Gemini API error ${res.status}: ${body.slice(0, 500)}`);
+    if (res.status === 429) {
+      // Google returns the wait time in the body ("Please retry in 49.7s") and
+      // sometimes a Retry-After header. Prefer whichever we can parse.
+      const fromBody = body.match(/retry in ([\d.]+)s/i)?.[1];
+      const fromHeader = res.headers.get("retry-after");
+      const secs = fromBody
+        ? Math.ceil(parseFloat(fromBody))
+        : fromHeader && Number.isFinite(Number(fromHeader))
+          ? Number(fromHeader)
+          : undefined;
+      throw new GeminiError(429, "Gemini free-tier quota exceeded.", secs);
+    }
+    throw new GeminiError(
+      res.status,
+      `Gemini API error ${res.status}: ${body.slice(0, 500)}`,
+    );
   }
 
   const data = await res.json();

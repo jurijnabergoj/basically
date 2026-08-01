@@ -1,12 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { randomTopic, type Topic } from "@/lib/topics";
 import { countWords, WORD_LIMIT } from "@/lib/words";
 import { encodeShare } from "@/lib/share";
 import type { GradeResult } from "@/lib/grade";
 import { ScoreDial, scoreColor, scoreBand } from "@/components/ScoreDial";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { getClientId } from "@/lib/clientId";
 
 type Phase = "start" | "writing" | "grading" | "done";
 
@@ -20,12 +22,38 @@ const chip =
   "inline-block rounded-full border border-[var(--accent-border)] px-2.5 py-1 text-xs font-medium uppercase tracking-wider text-[var(--accent-text)]";
 
 export default function Home() {
+  const router = useRouter();
   const [phase, setPhase] = useState<Phase>("start");
   const [topic, setTopic] = useState<Topic | null>(null);
   const [text, setText] = useState("");
   const [result, setResult] = useState<GradeResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // "Challenge a friend" inline flow.
+  const [challenging, setChallenging] = useState(false);
+  const [duelNick, setDuelNick] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [duelError, setDuelError] = useState<string | null>(null);
+
+  async function createDuel() {
+    if (!duelNick.trim() || creating) return;
+    setCreating(true);
+    setDuelError(null);
+    try {
+      const res = await fetch("/api/lobby", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clientId: getClientId(), nickname: duelNick }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || "Couldn't create a match.");
+      router.push(`/lobby/${data.code}`);
+    } catch (e) {
+      setDuelError(e instanceof Error ? e.message : "Couldn't create a match.");
+      setCreating(false);
+    }
+  }
 
   const words = countWords(text);
   const over = words > WORD_LIMIT;
@@ -85,7 +113,7 @@ export default function Home() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } catch {
-      setError("Couldn't copy — grab the link below instead.");
+      setError("Couldn't copy. Grab the link below instead.");
     }
   }
 
@@ -105,17 +133,70 @@ export default function Home() {
       {phase === "start" && (
         <div className="flex flex-1 flex-col justify-center">
           <h1 className="text-4xl font-bold leading-[1.05] tracking-tight text-[var(--text)] sm:text-5xl">
-            You know how it works. Right?
+            Do you really know how it works?
           </h1>
           <p className="mt-5 max-w-md text-lg text-[var(--text-muted)]">
             Explain a random everyday thing in 100 words. Find out how much you
             actually understand.
           </p>
-          <div className="mt-8">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <button onClick={pickTopic} className={primaryBtn}>
               Give me a topic
             </button>
+            {!challenging && (
+              <button
+                onClick={() => {
+                  setChallenging(true);
+                  setDuelError(null);
+                }}
+                className={ghostBtn}
+              >
+                Challenge a friend
+              </button>
+            )}
           </div>
+
+          {challenging && (
+            <div className={`mt-6 ${card}`}>
+              <div className={`mb-3 ${chip}`}>1v1 duel</div>
+              <h2 className="mb-1 text-xl font-semibold text-[var(--text)]">
+                Challenge a friend
+              </h2>
+              <p className="mb-5 text-[var(--text-muted)]">
+                Same topic, 60 seconds each, higher score wins. Pick a nickname
+                and we&apos;ll make you a shareable link.
+              </p>
+              <input
+                value={duelNick}
+                onChange={(e) => setDuelNick(e.target.value)}
+                maxLength={24}
+                autoFocus
+                placeholder="Your nickname"
+                onKeyDown={(e) => e.key === "Enter" && createDuel()}
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--input-bg)] p-4 text-base text-[var(--text)] outline-none transition placeholder:text-[var(--text-faint)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent-ring)]"
+              />
+              {duelError && (
+                <p className="mt-4 rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-500">
+                  {duelError}
+                </p>
+              )}
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                <button
+                  onClick={createDuel}
+                  disabled={creating || !duelNick.trim()}
+                  className={`flex-1 ${primaryBtn}`}
+                >
+                  {creating ? "Creating…" : "Create match"}
+                </button>
+                <button
+                  onClick={() => setChallenging(false)}
+                  className={`flex-1 ${ghostBtn}`}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -139,7 +220,7 @@ export default function Home() {
           <div className="mt-2 flex items-center justify-between text-sm">
             <span className={over ? "font-medium text-red-500" : "text-[var(--text-faint)]"}>
               {words} / {WORD_LIMIT}
-              {over && " — too long"}
+              {over && " (too long)"}
             </span>
             <button
               onClick={pickTopic}
