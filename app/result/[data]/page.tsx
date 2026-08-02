@@ -3,6 +3,7 @@ import Link from "next/link";
 import { decodeShare } from "@/lib/share";
 import { ScoreBox } from "@/components/ScoreBox";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Footer } from "@/components/Footer";
 
 type Props = { params: Promise<{ data: string }> };
 
@@ -42,53 +43,62 @@ export default async function ResultPage({ params }: Props) {
   const share = decodeShare(data);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-5 py-10 sm:py-14">
-      <header className="mb-10 flex items-center justify-between">
-        <Link
-          href="/"
-          className="text-2xl font-bold tracking-tight text-[var(--text)]"
-        >
-          basically<span className="text-[var(--accent-text)]">…</span>
-        </Link>
-        <ThemeToggle />
+    <div className="flex min-h-screen flex-col">
+      <header className="border-b border-[var(--border)]">
+        <div className="flex items-center justify-between px-5 py-4 sm:px-8">
+          <Link
+            href="/"
+            className="text-xl font-bold tracking-tight text-[var(--text)]"
+          >
+            basically<span className="text-[var(--accent-text)]">…</span>
+          </Link>
+          <ThemeToggle />
+        </div>
       </header>
 
-      {!share ? (
-        <div className="flex flex-1 flex-col items-center justify-center text-center">
-          <h1 className="mb-3 text-2xl font-bold text-[var(--text)]">
-            This link&apos;s broken
-          </h1>
-          <p className="mb-6 text-[var(--text-muted)]">
-            Couldn&apos;t read a score out of it.
-          </p>
-          <Link href="/" className={primaryBtn}>
-            Play anyway
-          </Link>
-        </div>
-      ) : (
-        <div className="flex flex-1 flex-col justify-center">
-          <div className={`${card} text-center`}>
-            <p className="mb-1 text-sm text-[var(--text-faint)]">Someone scored</p>
-            <h1 className="mb-6 text-xl font-semibold text-[var(--text)] sm:text-2xl">
-              “{share.topic}”
+      <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-10 sm:px-8 sm:py-12">
+        {!share ? (
+          <div>
+            <h1 className="mb-3 text-2xl font-bold text-[var(--text)]">
+              This link&apos;s broken
             </h1>
-
-            <div className="flex flex-col items-center gap-4">
-              <ScoreBox score={share.score} />
-              {share.verdict && (
-                <p className="max-w-md text-[var(--text-muted)]">{share.verdict}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-8 text-center">
-            <p className="mb-4 text-[var(--text-muted)]">Think you can do better?</p>
+            <p className="mb-6 text-[var(--text-muted)]">
+              Couldn&apos;t read a score out of it.
+            </p>
             <Link href="/" className={primaryBtn}>
-              Give it a shot
+              Play anyway
             </Link>
           </div>
-        </div>
-      )}
-    </main>
+        ) : (
+          <div>
+            <div className={card}>
+              <div className="sm:flex sm:items-start sm:justify-between sm:gap-6">
+                <div className="min-w-0">
+                  <p className="mb-1 text-sm text-[var(--text-faint)]">Someone scored</p>
+                  <h1 className="text-xl font-semibold text-[var(--text)] sm:text-2xl">
+                    “{share.topic}”
+                  </h1>
+                  {share.verdict && (
+                    <p className="mt-4 text-[var(--text-muted)]">{share.verdict}</p>
+                  )}
+                </div>
+                <div className="mt-5 shrink-0 sm:mt-0">
+                  <ScoreBox score={share.score} />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8">
+              <p className="mb-4 text-[var(--text-muted)]">Think you can do better?</p>
+              <Link href="/" className={primaryBtn}>
+                Give it a shot
+              </Link>
+            </div>
+          </div>
+        )}
+      </main>
+
+      <Footer />
+    </div>
   );
 }

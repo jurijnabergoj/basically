@@ -11,6 +11,7 @@ import {
 } from "@/lib/lobby";
 import { ScoreBox } from "@/components/ScoreBox";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Footer } from "@/components/Footer";
 import { getClientId } from "@/lib/clientId";
 import { getSupabaseBrowser } from "@/lib/supabaseBrowser";
 
@@ -492,17 +493,21 @@ export default function LobbyPage({
   const oppGone = !!view?.opponent && !opponentPresent;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-5 py-10 sm:py-14">
-      <header className="mb-10 flex items-center justify-between">
-        <button
-          onClick={() => router.push("/")}
-          className="text-2xl font-bold tracking-tight text-[var(--text)]"
-          aria-label="Back to start"
-        >
-          basically...
-        </button>
-        <ThemeToggle />
+    <div className="flex min-h-screen flex-col">
+      <header className="border-b border-[var(--border)]">
+        <div className="flex items-center justify-between px-5 py-4 sm:px-8">
+          <button
+            onClick={() => router.push("/")}
+            className="text-xl font-bold tracking-tight text-[var(--text)]"
+            aria-label="Back to start"
+          >
+            basically<span className="text-[var(--accent-text)]">…</span>
+          </button>
+          <ThemeToggle />
+        </div>
       </header>
+
+      <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-10 sm:px-8 sm:py-12">
 
       {!loaded && (
         <div className="flex flex-1 items-center justify-center text-[var(--text-muted)]">
@@ -859,10 +864,10 @@ export default function LobbyPage({
         </div>
       )}
 
-      <footer className="mt-auto pt-12 text-center text-xs text-[var(--text-faint)]">
-        Scored by a robot. Don&apos;t take it personally.
-      </footer>
-    </main>
+      </main>
+
+      <Footer />
+    </div>
   );
 }
 

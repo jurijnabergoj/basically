@@ -8,6 +8,7 @@ import { encodeShare } from "@/lib/share";
 import type { GradeResult } from "@/lib/grade";
 import { ScoreBox } from "@/components/ScoreBox";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Footer } from "@/components/Footer";
 import { getClientId } from "@/lib/clientId";
 
 type Phase = "start" | "writing" | "grading" | "done";
@@ -118,24 +119,28 @@ export default function Home() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-5 py-10 sm:py-14">
-      <header className="mb-10 flex items-center justify-between">
-        <button
-          onClick={goHome}
-          className="text-2xl font-bold tracking-tight text-[var(--text)]"
-          aria-label="Back to start"
-        >
-          basically...
-        </button>
-        <ThemeToggle />
+    <div className="flex min-h-screen flex-col">
+      <header className="border-b border-[var(--border)]">
+        <div className="flex items-center justify-between px-5 py-4 sm:px-8">
+          <button
+            onClick={goHome}
+            className="text-xl font-bold tracking-tight text-[var(--text)]"
+            aria-label="Back to start"
+          >
+            basically<span className="text-[var(--accent-text)]">…</span>
+          </button>
+          <ThemeToggle />
+        </div>
       </header>
 
+      <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-10 sm:px-8 sm:py-12">
+
       {phase === "start" && (
-        <div className="flex flex-1 flex-col justify-center">
-          <h1 className="text-4xl font-bold leading-[1.05] tracking-tight text-[var(--text)] sm:text-5xl">
-            Do you really know how it works?
+        <div>
+          <h1 className="text-4xl font-bold leading-[1.05] tracking-tight text-[var(--text)]">
+            How does it work?
           </h1>
-          <p className="mt-5 max-w-md text-lg text-[var(--text-muted)]">
+          <p className="mt-5 max-w-2xl text-lg text-[var(--text-muted)]">
             Explain a random everyday thing in 100 words. Find out how much you
             actually understand.
           </p>
@@ -163,8 +168,9 @@ export default function Home() {
                 Challenge a friend
               </h2>
               <p className="mb-5 text-[var(--text-muted)]">
-                Same topic, 60 seconds each, higher score wins. Pick a nickname
-                and we&apos;ll make you a shareable link.
+                You and a friend both get the same topic and 60 seconds to
+                explain it, and whoever scores higher wins. Pick a nickname to
+                create a lobby, then share the link to invite them in.
               </p>
               <input
                 value={duelNick}
@@ -180,19 +186,19 @@ export default function Home() {
                   {duelError}
                 </p>
               )}
-              <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-5 flex items-center justify-between">
+                <button
+                  onClick={() => setChallenging(false)}
+                  className={ghostBtn}
+                >
+                  Cancel
+                </button>
                 <button
                   onClick={createDuel}
                   disabled={creating || !duelNick.trim()}
-                  className={`flex-1 ${primaryBtn}`}
+                  className={primaryBtn}
                 >
                   {creating ? "Creating…" : "Create match"}
-                </button>
-                <button
-                  onClick={() => setChallenging(false)}
-                  className={`flex-1 ${ghostBtn}`}
-                >
-                  Cancel
                 </button>
               </div>
             </div>
@@ -237,29 +243,37 @@ export default function Home() {
             </p>
           )}
 
-          <button
-            onClick={submit}
-            disabled={phase === "grading" || words === 0 || over}
-            className={`mt-6 w-full ${primaryBtn}`}
-          >
-            {phase === "grading" ? "Scoring…" : "Score it"}
-          </button>
+          <div className="mt-6 flex items-center justify-between">
+            <button onClick={goHome} className={ghostBtn}>
+              Back
+            </button>
+            <button
+              onClick={submit}
+              disabled={phase === "grading" || words === 0 || over}
+              className={primaryBtn}
+            >
+              {phase === "grading" ? "Scoring…" : "Score it"}
+            </button>
+          </div>
         </div>
       )}
 
       {phase === "done" && topic && result && (
         <div className="space-y-4">
-          <div className={`${card} text-center`}>
-            <div className={`mb-4 ${chip}`}>{topic.category}</div>
-            <h2 className="mb-6 text-xl font-semibold leading-tight text-[var(--text)] sm:text-2xl">
-              {topic.prompt}
-            </h2>
-
-            <div className="flex flex-col items-center gap-4">
-              <ScoreBox score={result.score} label="Your score" />
-              {result.verdict && (
-                <p className="max-w-md text-[var(--text-muted)]">{result.verdict}</p>
-              )}
+          <div className={card}>
+            <div className="sm:flex sm:items-start sm:justify-between sm:gap-6">
+              <div className="min-w-0">
+                <div className={`mb-3 ${chip}`}>{topic.category}</div>
+                <h2 className="text-xl font-semibold leading-tight text-[var(--text)] sm:text-2xl">
+                  {topic.prompt}
+                </h2>
+                {result.verdict && (
+                  <p className="mt-4 text-[var(--text-muted)]">{result.verdict}</p>
+                )}
+              </div>
+              <div className="mt-5 shrink-0 sm:mt-0">
+                <ScoreBox score={result.score} label="Your score" />
+              </div>
             </div>
           </div>
 
@@ -309,16 +323,16 @@ export default function Home() {
           </div>
 
           {shareUrl && (
-            <p className="break-all text-center text-xs text-[var(--text-faint)]">
+            <p className="break-all text-xs text-[var(--text-faint)]">
               {shareUrl}
             </p>
           )}
         </div>
       )}
 
-      <footer className="mt-auto pt-12 text-center text-xs text-[var(--text-faint)]">
-        Scored by a robot. Don&apos;t take it personally.
-      </footer>
-    </main>
+      </main>
+
+      <Footer />
+    </div>
   );
 }
