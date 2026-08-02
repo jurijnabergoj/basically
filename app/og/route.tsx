@@ -3,10 +3,18 @@ import { decodeShare } from "@/lib/share";
 
 export const runtime = "nodejs";
 
+// Modern reference palette (matches the app): white ground, wiki-blue accent,
+// score band tinted by semantic color.
+const INK = "#1b1d21";
+const MUTED = "#5b6068";
+const FAINT = "#8a9099";
+const ACCENT = "#3366cc";
+const BORDER = "#dcdfe4";
+
 function color(score: number): string {
-  if (score >= 70) return "#4ade80";
-  if (score >= 40) return "#fbbf24";
-  return "#f87171";
+  if (score >= 70) return "#16a34a"; // green-600
+  if (score >= 40) return "#d97706"; // amber-600
+  return "#dc2626"; // red-600
 }
 
 function band(score: number): string {
@@ -15,6 +23,15 @@ function band(score: number): string {
   if (score >= 50) return "Kinda shaky";
   if (score >= 30) return "Rough";
   return "Oof";
+}
+
+function Wordmark() {
+  return (
+    <div style={{ display: "flex", fontSize: 40, fontWeight: 700, color: INK }}>
+      basically
+      <span style={{ color: ACCENT }}>…</span>
+    </div>
+  );
 }
 
 // The default card shown when someone shares the home page (no result attached).
@@ -27,18 +44,14 @@ function homeCard() {
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          backgroundColor: "#0b0b0c",
-          backgroundImage:
-            "radial-gradient(60% 60% at 50% -10%, rgba(96,165,250,0.16), transparent 70%)",
+          backgroundColor: "#ffffff",
+          borderTop: `12px solid ${ACCENT}`,
           padding: "72px",
           justifyContent: "space-between",
           fontFamily: "sans-serif",
         }}
       >
-        <div style={{ display: "flex", fontSize: 40, fontWeight: 700, color: "#f5f5f5" }}>
-          basically
-          <span style={{ color: "#60a5fa" }}>…</span>
-        </div>
+        <Wordmark />
 
         <div
           style={{
@@ -46,18 +59,18 @@ function homeCard() {
             flexDirection: "column",
             fontSize: 68,
             fontWeight: 800,
-            color: "#f5f5f5",
+            color: INK,
             lineHeight: 1.15,
           }}
         >
           <div style={{ display: "flex" }}>Do you actually know</div>
           <div style={{ display: "flex" }}>how things work?</div>
-          <div style={{ display: "flex", fontSize: 32, fontWeight: 500, color: "#a1a1aa", marginTop: 24 }}>
+          <div style={{ display: "flex", fontSize: 32, fontWeight: 500, color: MUTED, marginTop: 24 }}>
             Explain an everyday thing in 100 words. Get graded 1–100.
           </div>
         </div>
 
-        <div style={{ display: "flex", fontSize: 28, color: "#8a8a8f" }}>
+        <div style={{ display: "flex", fontSize: 28, color: FAINT }}>
           Think you know more than you do?
         </div>
       </div>
@@ -84,44 +97,38 @@ export async function GET(req: Request) {
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          backgroundColor: "#0b0b0c",
-          backgroundImage:
-            "radial-gradient(60% 60% at 50% -10%, rgba(96,165,250,0.16), transparent 70%)",
+          backgroundColor: "#ffffff",
+          borderTop: `12px solid ${ACCENT}`,
           padding: "72px",
           justifyContent: "space-between",
           fontFamily: "sans-serif",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            fontSize: 40,
-            fontWeight: 700,
-            color: "#f5f5f5",
-          }}
-        >
-          basically
-          <span style={{ color: "#60a5fa" }}>…</span>
-        </div>
+        <Wordmark />
 
         <div style={{ display: "flex", alignItems: "center", gap: "48px" }}>
+          {/* Flat, bordered score box with a left accent edge (matches the app). */}
           <div
             style={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              width: 260,
-              height: 260,
-              borderRadius: 260,
-              border: `16px solid ${accent}`,
+              width: 240,
+              height: 240,
+              borderRadius: 16,
+              border: `2px solid ${BORDER}`,
+              borderLeft: `12px solid ${ACCENT}`,
               flexShrink: 0,
             }}
           >
-            <div style={{ display: "flex", fontSize: 120, fontWeight: 800, color: accent, lineHeight: 1 }}>
+            <div style={{ display: "flex", fontSize: 24, fontWeight: 700, color: MUTED, letterSpacing: 2 }}>
+              SCORE
+            </div>
+            <div style={{ display: "flex", fontSize: 130, fontWeight: 800, color: INK, lineHeight: 1 }}>
               {score}
             </div>
-            <div style={{ display: "flex", fontSize: 26, color: "#71717a" }}>/ 100</div>
+            <div style={{ display: "flex", fontSize: 24, color: FAINT }}>out of 100</div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column" }}>
@@ -133,7 +140,7 @@ export async function GET(req: Request) {
                 display: "flex",
                 fontSize: 40,
                 fontWeight: 600,
-                color: "#e5e5e5",
+                color: INK,
                 lineHeight: 1.25,
                 marginTop: 12,
               }}
@@ -143,7 +150,7 @@ export async function GET(req: Request) {
           </div>
         </div>
 
-        <div style={{ display: "flex", fontSize: 28, color: "#8a8a8f" }}>
+        <div style={{ display: "flex", fontSize: 28, color: FAINT }}>
           Think you can do better?
         </div>
       </div>

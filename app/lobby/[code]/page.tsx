@@ -9,7 +9,7 @@ import {
   READY_TIMEOUT_SECONDS,
   type RoundMode,
 } from "@/lib/lobby";
-import { ScoreDial, scoreColor, scoreBand } from "@/components/ScoreDial";
+import { ScoreBox } from "@/components/ScoreBox";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getClientId } from "@/lib/clientId";
 import { getSupabaseBrowser } from "@/lib/supabaseBrowser";
@@ -51,13 +51,13 @@ type LobbyView = {
 };
 
 const primaryBtn =
-  "rounded-full bg-[var(--accent)] px-6 py-3 text-base font-semibold text-[var(--accent-contrast)] transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-40";
+  "rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-contrast)] transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-40";
 const ghostBtn =
-  "rounded-full border border-[var(--border)] px-6 py-3 text-base font-semibold text-[var(--text)] transition hover:bg-[var(--hover)]";
+  "rounded-lg border border-[var(--border)] bg-[var(--panel)] px-5 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--hover)]";
 const card =
-  "rounded-3xl border border-[var(--border)] bg-[var(--panel)] p-6 shadow-sm sm:p-8";
+  "rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6 sm:p-8";
 const chip =
-  "inline-block rounded-full border border-[var(--accent-border)] px-2.5 py-1 text-xs font-medium uppercase tracking-wider text-[var(--accent-text)]";
+  "inline-block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]";
 
 // How many times a submit retries on transient failure (grader busy / network)
 // before giving up and asking the player to lock in manually.
@@ -552,11 +552,11 @@ export default function LobbyPage({
                 maxLength={24}
                 autoFocus
                 placeholder="Your nickname"
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--input-bg)] p-4 text-base text-[var(--text)] outline-none transition placeholder:text-[var(--text-faint)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent-ring)]"
+                className="w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] p-4 text-base text-[var(--text)] outline-none transition placeholder:text-[var(--text-faint)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent-ring)]"
                 onKeyDown={(e) => e.key === "Enter" && join()}
               />
               {error && (
-                <p className="mt-4 rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-500">
+                <p className="mt-4 rounded-md bg-red-500/10 px-3 py-2 text-sm text-red-500">
                   {error}
                 </p>
               )}
@@ -583,7 +583,7 @@ export default function LobbyPage({
             Send it to one friend. When they join, start the match.
           </p>
 
-          <div className="mb-3 flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--input-bg)] px-4 py-3">
+          <div className="mb-3 flex items-center justify-between gap-3 rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-4 py-3">
             <span className="truncate text-sm text-[var(--text-body)]">
               {shareUrl}
             </span>
@@ -629,7 +629,7 @@ export default function LobbyPage({
                   <button
                     key={n}
                     onClick={() => setSelectedRounds(n)}
-                    className={`rounded-2xl border px-3 py-3 text-sm font-semibold transition ${
+                    className={`rounded-lg border px-3 py-3 text-sm font-semibold transition ${
                       selectedRounds === n
                         ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-contrast)]"
                         : "border-[var(--border)] text-[var(--text)] hover:bg-[var(--hover)]"
@@ -641,7 +641,7 @@ export default function LobbyPage({
               </div>
 
               {error && (
-                <p className="mb-4 rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-500">
+                <p className="mb-4 rounded-md bg-red-500/10 px-3 py-2 text-sm text-red-500">
                   {error}
                 </p>
               )}
@@ -712,7 +712,7 @@ export default function LobbyPage({
                 rows={7}
                 autoFocus
                 placeholder="Explain it..."
-                className="w-full resize-y rounded-2xl border border-[var(--border)] bg-[var(--input-bg)] p-4 text-base text-[var(--text)] outline-none transition placeholder:text-[var(--text-faint)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent-ring)] disabled:opacity-60"
+                className="w-full resize-y rounded-lg border border-[var(--border)] bg-[var(--input-bg)] p-4 text-base text-[var(--text)] outline-none transition placeholder:text-[var(--text-faint)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent-ring)] disabled:opacity-60"
               />
               <div className="mt-2 flex items-center justify-between text-sm">
                 <span
@@ -731,14 +731,14 @@ export default function LobbyPage({
               </div>
 
               {retryUntil != null && (
-                <p className="mt-4 rounded-xl bg-[var(--hover)] px-3 py-2 text-sm text-[var(--text-muted)]">
+                <p className="mt-4 rounded-md bg-[var(--hover)] px-3 py-2 text-sm text-[var(--text-muted)]">
                   The grader hit its free-tier limit. Retrying in{" "}
                   {Math.max(0, Math.ceil((retryUntil - Date.now()) / 1000))}s…
                 </p>
               )}
 
               {error && (
-                <p className="mt-4 rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-500">
+                <p className="mt-4 rounded-md bg-red-500/10 px-3 py-2 text-sm text-red-500">
                   {error}
                 </p>
               )}
@@ -756,7 +756,7 @@ export default function LobbyPage({
               </button>
             </>
           ) : (
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--input-bg)] p-6 text-center">
+            <div className="rounded-lg border border-[var(--border)] bg-[var(--input-bg)] p-6 text-center">
               <p className="text-lg font-semibold text-[var(--text)]">
                 Locked in ✓
               </p>
@@ -824,12 +824,12 @@ export default function LobbyPage({
           )}
 
           {oppGone && (
-            <p className="rounded-xl bg-[var(--hover)] px-3 py-2 text-center text-sm text-[var(--text-muted)]">
+            <p className="rounded-md bg-[var(--hover)] px-3 py-2 text-center text-sm text-[var(--text-muted)]">
               Your opponent left the match.
             </p>
           )}
           {error && (
-            <p className="rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-500">
+            <p className="rounded-md bg-red-500/10 px-3 py-2 text-sm text-red-500">
               {error}
             </p>
           )}
@@ -868,7 +868,7 @@ export default function LobbyPage({
 
 function PlayerLine({ label, present }: { label: string; present: boolean }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--input-bg)] px-4 py-3">
+    <div className="flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-4 py-3">
       <span
         className={`h-2.5 w-2.5 rounded-full ${
           present ? "bg-green-500" : "bg-[var(--text-faint)]"
@@ -911,7 +911,7 @@ function NextRoundControls({
     <div className="flex flex-col gap-3 pt-1 sm:flex-row">
       {youReady ? (
         <div
-          className={`flex-1 rounded-full border border-[var(--border)] px-6 py-3 text-center text-base font-semibold text-[var(--text-muted)]`}
+          className={`flex-1 rounded-lg border border-[var(--border)] px-5 py-2.5 text-center text-sm font-semibold text-[var(--text-muted)]`}
         >
           {oppReady ? "Starting…" : `Waiting for ${oppName}…`}
         </div>
@@ -945,7 +945,7 @@ function RematchControls({
   if (oppGone) {
     return (
       <div className="space-y-3">
-        <p className="rounded-xl bg-[var(--hover)] px-3 py-2 text-center text-sm text-[var(--text-muted)]">
+        <p className="rounded-md bg-[var(--hover)] px-3 py-2 text-center text-sm text-[var(--text-muted)]">
           Can&apos;t rematch. {oppName} left.
         </p>
         <button onClick={onHome} className={`w-full ${ghostBtn}`}>
@@ -1037,7 +1037,7 @@ function PlayerResult({
   const [open, setOpen] = useState(false);
   return (
     <div
-      className={`rounded-3xl border p-6 shadow-sm ${
+      className={`rounded-lg border p-6 ${
         highlight
           ? "border-[var(--accent)] bg-[var(--panel)]"
           : "border-[var(--border)] bg-[var(--panel)]"
@@ -1054,12 +1054,7 @@ function PlayerResult({
         )}
       </div>
       <div className="flex flex-col items-center gap-2">
-        <ScoreDial score={score ?? 0} size={128} />
-        {score != null && (
-          <p className="text-lg font-bold" style={{ color: scoreColor(score) }}>
-            {scoreBand(score)}
-          </p>
-        )}
+        <ScoreBox score={score ?? 0} size="sm" label={tag} />
         <p className="text-[var(--text)]">{name}</p>
       </div>
 

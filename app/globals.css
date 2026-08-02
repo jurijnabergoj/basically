@@ -2,47 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Modern reference palette: plain white/grey grounds, wiki-blue accent, no glow.
+   Theme is managed explicitly via [data-theme] (see ThemeToggle); light is default. */
 :root,
-[data-theme="dark"] {
-  color-scheme: dark;
-  --bg: #0b0b0c;
-  --glow: rgba(96, 165, 250, 0.08);
-  --panel: #161617;
-  --border: rgba(255, 255, 255, 0.1);
-  --hover: rgba(255, 255, 255, 0.05);
-  --text: #f5f5f5;
-  --text-body: #e7e7e7;
-  --text-muted: #a1a1aa;
-  --text-faint: #71717a;
-  --accent: #60a5fa;
-  --accent-hover: #93c5fd;
-  --accent-contrast: #071018;
-  --accent-text: #7cb0fb;
-  --accent-border: rgba(96, 165, 250, 0.25);
-  --accent-ring: rgba(96, 165, 250, 0.4);
-  --input-bg: rgba(0, 0, 0, 0.3);
-  --dial-track: #26262a;
-}
-
 [data-theme="light"] {
   color-scheme: light;
-  --bg: #f6f6f4;
-  --glow: rgba(59, 130, 246, 0.16);
+  --bg: #f7f8fa;
   --panel: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
-  --hover: rgba(0, 0, 0, 0.05);
-  --text: #141414;
-  --text-body: #27272a;
-  --text-muted: #52525b;
-  --text-faint: #a1a1aa;
-  --accent: #3b82f6;
-  --accent-hover: #2563eb;
+  --border: #dcdfe4;
+  --hover: rgba(0, 0, 0, 0.04);
+  --text: #1b1d21;
+  --text-body: #2a2d31;
+  --text-muted: #5b6068;
+  --text-faint: #8a9099;
+  --accent: #3366cc;
+  --accent-hover: #2a54a8;
   --accent-contrast: #ffffff;
-  --accent-text: #1d4ed8;
-  --accent-border: rgba(37, 99, 235, 0.3);
-  --accent-ring: rgba(37, 99, 235, 0.35);
+  --accent-text: #2a54a8;
+  --accent-border: #cdd6ea;
+  --accent-ring: rgba(51, 102, 204, 0.35);
   --input-bg: #ffffff;
-  --dial-track: #e4e4e7;
+  --dial-track: #e4e6eb;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #101418;
+  --panel: #191c21;
+  --border: #2c3037;
+  --hover: rgba(255, 255, 255, 0.05);
+  --text: #eaecf0;
+  --text-body: #d4d7dd;
+  --text-muted: #a0a6ae;
+  --text-faint: #737982;
+  --accent: #3b6fd4;
+  --accent-hover: #558bf0;
+  --accent-contrast: #ffffff;
+  --accent-text: #7aa7ff;
+  --accent-border: #2f3f5e;
+  --accent-ring: rgba(96, 153, 255, 0.4);
+  --input-bg: #0f1215;
+  --dial-track: #2c3037;
 }
 
 body {
@@ -50,13 +50,8 @@ body {
   background-color: var(--bg);
   color: var(--text-body);
   -webkit-font-smoothing: antialiased;
-  background-image: radial-gradient(
-    70% 55% at 50% -10%,
-    var(--glow),
-    transparent 70%
-  );
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
 }
 
 ::selection {

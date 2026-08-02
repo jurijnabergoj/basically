@@ -6,20 +6,20 @@ import { randomTopic, type Topic } from "@/lib/topics";
 import { countWords, WORD_LIMIT } from "@/lib/words";
 import { encodeShare } from "@/lib/share";
 import type { GradeResult } from "@/lib/grade";
-import { ScoreDial, scoreColor, scoreBand } from "@/components/ScoreDial";
+import { ScoreBox } from "@/components/ScoreBox";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getClientId } from "@/lib/clientId";
 
 type Phase = "start" | "writing" | "grading" | "done";
 
 const primaryBtn =
-  "rounded-full bg-[var(--accent)] px-6 py-3 text-base font-semibold text-[var(--accent-contrast)] transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-40";
+  "rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-contrast)] transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-40";
 const ghostBtn =
-  "rounded-full border border-[var(--border)] px-6 py-3 text-base font-semibold text-[var(--text)] transition hover:bg-[var(--hover)]";
+  "rounded-lg border border-[var(--border)] bg-[var(--panel)] px-5 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--hover)]";
 const card =
-  "rounded-3xl border border-[var(--border)] bg-[var(--panel)] p-6 shadow-sm sm:p-8";
+  "rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6 sm:p-8";
 const chip =
-  "inline-block rounded-full border border-[var(--accent-border)] px-2.5 py-1 text-xs font-medium uppercase tracking-wider text-[var(--accent-text)]";
+  "inline-block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]";
 
 export default function Home() {
   const router = useRouter();
@@ -173,10 +173,10 @@ export default function Home() {
                 autoFocus
                 placeholder="Your nickname"
                 onKeyDown={(e) => e.key === "Enter" && createDuel()}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--input-bg)] p-4 text-base text-[var(--text)] outline-none transition placeholder:text-[var(--text-faint)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent-ring)]"
+                className="w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] p-4 text-base text-[var(--text)] outline-none transition placeholder:text-[var(--text-faint)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent-ring)]"
               />
               {duelError && (
-                <p className="mt-4 rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-500">
+                <p className="mt-4 rounded-md bg-red-500/10 px-3 py-2 text-sm text-red-500">
                   {duelError}
                 </p>
               )}
@@ -214,7 +214,7 @@ export default function Home() {
             rows={7}
             autoFocus
             placeholder="Explain it..."
-            className="w-full resize-y rounded-2xl border border-[var(--border)] bg-[var(--input-bg)] p-4 text-base text-[var(--text)] outline-none transition placeholder:text-[var(--text-faint)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent-ring)] disabled:opacity-60"
+            className="w-full resize-y rounded-lg border border-[var(--border)] bg-[var(--input-bg)] p-4 text-base text-[var(--text)] outline-none transition placeholder:text-[var(--text-faint)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent-ring)] disabled:opacity-60"
           />
 
           <div className="mt-2 flex items-center justify-between text-sm">
@@ -232,7 +232,7 @@ export default function Home() {
           </div>
 
           {error && (
-            <p className="mt-4 rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-500">
+            <p className="mt-4 rounded-md bg-red-500/10 px-3 py-2 text-sm text-red-500">
               {error}
             </p>
           )}
@@ -255,14 +255,8 @@ export default function Home() {
               {topic.prompt}
             </h2>
 
-            <div className="flex flex-col items-center gap-3">
-              <ScoreDial score={result.score} size={168} />
-              <p
-                className="text-2xl font-bold"
-                style={{ color: scoreColor(result.score) }}
-              >
-                {scoreBand(result.score)}
-              </p>
+            <div className="flex flex-col items-center gap-4">
+              <ScoreBox score={result.score} label="Your score" />
               {result.verdict && (
                 <p className="max-w-md text-[var(--text-muted)]">{result.verdict}</p>
               )}

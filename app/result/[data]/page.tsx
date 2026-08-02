@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { decodeShare } from "@/lib/share";
-import { ScoreDial, scoreColor, scoreBand } from "@/components/ScoreDial";
+import { ScoreBox } from "@/components/ScoreBox";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 type Props = { params: Promise<{ data: string }> };
@@ -33,9 +33,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 const card =
-  "rounded-3xl border border-[var(--border)] bg-[var(--panel)] p-8 shadow-sm";
+  "rounded-lg border border-[var(--border)] bg-[var(--panel)] p-8";
 const primaryBtn =
-  "rounded-full bg-[var(--accent)] px-6 py-3 text-base font-semibold text-[var(--accent-contrast)] transition hover:bg-[var(--accent-hover)]";
+  "rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-contrast)] transition hover:bg-[var(--accent-hover)]";
 
 export default async function ResultPage({ params }: Props) {
   const { data } = await params;
@@ -73,14 +73,8 @@ export default async function ResultPage({ params }: Props) {
               “{share.topic}”
             </h1>
 
-            <div className="flex flex-col items-center gap-3">
-              <ScoreDial score={share.score} size={168} />
-              <p
-                className="text-2xl font-bold"
-                style={{ color: scoreColor(share.score) }}
-              >
-                {scoreBand(share.score)}
-              </p>
+            <div className="flex flex-col items-center gap-4">
+              <ScoreBox score={share.score} />
               {share.verdict && (
                 <p className="max-w-md text-[var(--text-muted)]">{share.verdict}</p>
               )}
