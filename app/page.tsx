@@ -12,6 +12,7 @@ import { Footer } from "@/components/Footer";
 import { getClientId } from "@/lib/clientId";
 
 type Phase = "start" | "writing" | "grading" | "done";
+type ExplainMode = "simple" | "advanced";
 
 const primaryBtn =
   "rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-contrast)] transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-40";
@@ -30,6 +31,10 @@ export default function Home() {
   const [result, setResult] = useState<GradeResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [explainMode, setExplainMode] = useState<ExplainMode>("advanced");
+  // Score from the previous attempt at this same topic (retry flow), so the
+  // player can see whether they actually improved.
+  const [prevScore, setPrevScore] = useState<number | null>(null);
 
   // "Challenge a friend" inline flow.
   const [challenging, setChallenging] = useState(false);
@@ -76,10 +81,24 @@ export default function Home() {
     setResult(null);
     setError(null);
     setCopied(false);
+    setPrevScore(null);
   }
 
   function pickTopic() {
     setTopic((prev) => randomTopic(prev?.id));
+    setText("");
+    setResult(null);
+    setError(null);
+    setCopied(false);
+    setPrevScore(null);
+    setPhase("writing");
+  }
+
+  // Retry the same topic: keep the prompt, remember the last score to compare
+  // against, and drop back to a blank writing screen.
+  function retrySameTopic() {
+    if (!topic) return;
+    setPrevScore(result?.score ?? null);
     setText("");
     setResult(null);
     setError(null);
@@ -100,6 +119,7 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Something broke. Try again.");
       setResult(data as GradeResult);
+      setExplainMode("advanced");
       setPhase("done");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something broke. Try again.");
@@ -213,6 +233,15 @@ export default function Home() {
             {topic.prompt}
           </h2>
 
+          {prevScore != null && (
+            <p className="mb-4 rounded-md border border-[var(--border)] bg-[var(--input-bg)] px-3 py-2 text-sm text-[var(--text-muted)]">
+              Another go at this one. Last time you scored{" "}
+              <span className="font-semibold text-[var(--text)]">
+                {prevScore}
+              </span>
+            </p>
+          )}
+
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -273,16 +302,32 @@ export default function Home() {
               </div>
               <div className="mt-5 shrink-0 sm:mt-0">
                 <ScoreBox score={result.score} label="Your score" />
+                {prevScore != null && (
+                  <p className="mt-2 text-center text-xs text-[var(--text-muted)]">
+                    {result.score > prevScore
+                      ? `Up ${result.score - prevScore} from ${prevScore}`
+                      : result.score < prevScore
+                        ? `Down ${prevScore - result.score} from ${prevScore}`
+                        : `Same as last time (${prevScore})`}
+                  </p>
+                )}
               </div>
             </div>
           </div>
 
           <div className={card}>
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--accent-text)]">
-              How it actually works
-            </h3>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--accent-text)]">
+                How it actually works
+              </h3>
+              {result.simpleAnswer && (
+                <ExplainToggle mode={explainMode} onChange={setExplainMode} />
+              )}
+            </div>
             <p className="text-[15px] leading-relaxed text-[var(--text-body)]">
-              {result.modelAnswer}
+              {explainMode === "simple" && result.simpleAnswer
+                ? result.simpleAnswer
+                : result.modelAnswer}
             </p>
           </div>
 
@@ -317,8 +362,11 @@ export default function Home() {
             <button onClick={copyShare} className={`flex-1 ${primaryBtn}`}>
               {copied ? "Link copied!" : "Share result"}
             </button>
+            <button onClick={retrySameTopic} className={`flex-1 ${ghostBtn}`}>
+              Try this topic again
+            </button>
             <button onClick={pickTopic} className={`flex-1 ${ghostBtn}`}>
-              Go again
+              New topic
             </button>
           </div>
 
@@ -333,6 +381,35 @@ export default function Home() {
       </main>
 
       <Footer />
+    </div>
+  );
+}
+
+// A small segmented control to switch the model explanation between a
+// plain-language "simple" version and the precise "advanced" one.
+function ExplainToggle({
+  mode,
+  onChange,
+}: {
+  mode: ExplainMode;
+  onChange: (m: ExplainMode) => void;
+}) {
+  return (
+    <div className="inline-flex shrink-0 rounded-md border border-[var(--border)] p-0.5 text-xs font-semibold">
+      {(["simple", "advanced"] as const).map((m) => (
+        <button
+          key={m}
+          onClick={() => onChange(m)}
+          aria-pressed={mode === m}
+          className={`rounded px-2.5 py-1 capitalize transition ${
+            mode === m
+              ? "bg-[var(--accent)] text-[var(--accent-contrast)]"
+              : "text-[var(--text-muted)] hover:text-[var(--text)]"
+          }`}
+        >
+          {m}
+        </button>
+      ))}
     </div>
   );
 }

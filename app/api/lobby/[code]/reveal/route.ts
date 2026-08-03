@@ -84,6 +84,7 @@ export async function POST(
         verdict: text ? "Couldn't score in time." : "No answer submitted.",
         corrections: [],
         modelAnswer: "",
+        simpleAnswer: "",
       };
     }
     await db
@@ -96,6 +97,7 @@ export async function POST(
           verdict: grade.verdict,
           corrections: grade.corrections,
           modelAnswer: grade.modelAnswer,
+          simpleAnswer: grade.simpleAnswer,
         },
       })
       .eq("id", p.id)

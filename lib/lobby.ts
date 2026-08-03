@@ -23,6 +23,16 @@ export function targetWins(totalRounds: number): number {
 // players have time to read the model answer before the next round starts.
 export const READY_TIMEOUT_SECONDS = 120;
 
+// After the deadline, a player who has locked in may force a reveal that
+// forfeits a missing opponent. How long they wait first depends on whether that
+// opponent still looks connected: a connected opponent is probably just mid-grade
+// (free-tier latency can run many seconds), so we wait out the grader before
+// forfeiting them; a disconnected one is finalized almost immediately. This is
+// what keeps a genuine last-second submission from being clobbered by an
+// empty-answer forfeit while its grade is still in flight.
+export const FORFEIT_WAIT_PRESENT_SECONDS = 30;
+export const FORFEIT_WAIT_ABSENT_SECONDS = 1;
+
 export const CODE_LENGTH = 5;
 // No ambiguous characters (no O/0, I/1, L).
 const CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
@@ -60,7 +70,12 @@ export type PlayerRow = {
   answer: string | null;
   submitted_at: string | null;
   score: number | null;
-  grade: { verdict: string; corrections: string[]; modelAnswer: string } | null;
+  grade: {
+    verdict: string;
+    corrections: string[];
+    modelAnswer: string;
+    simpleAnswer?: string;
+  } | null;
   rounds_won: number; // wins accumulated across the series
   ready: boolean; // readied up for the next round
   joined_at: string;

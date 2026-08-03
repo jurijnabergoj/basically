@@ -7,6 +7,7 @@ export type GradeResult = {
   verdict: string;
   corrections: string[];
   modelAnswer: string;
+  simpleAnswer: string;
 };
 
 // Thrown when Gemini rejects the call. `status` mirrors the HTTP status;
@@ -42,7 +43,8 @@ Grade the explanation on a 1-100 scale for ACCURACY and COMPLETENESS of the unde
 - If the explanation is empty, nonsense, off-topic, or an obvious non-answer, score it very low (1-15).
 - "verdict": one short line (about 8-14 words) summarizing how they did.
 - "corrections": 2-4 short, specific items covering key points they missed or got wrong, tied to what they actually wrote.
-- "modelAnswer": a correct, satisfying explanation of about 60-90 words that a curious adult would find genuinely illuminating.
+- "modelAnswer": a correct, precise explanation of about 60-90 words that a curious adult would find genuinely illuminating. This is the advanced answer; don't shy away from the real mechanism or the proper terms.
+- "simpleAnswer": the same explanation retold in plain language for an adult without much knowledge in this topic, about 60 words. Understandable words, concrete analogies where they help, but without complex jargon.
 Respond ONLY with the JSON object.`;
 }
 
@@ -53,9 +55,16 @@ const RESPONSE_SCHEMA = {
     verdict: { type: "STRING" },
     corrections: { type: "ARRAY", items: { type: "STRING" } },
     modelAnswer: { type: "STRING" },
+    simpleAnswer: { type: "STRING" },
   },
-  required: ["score", "verdict", "corrections", "modelAnswer"],
-  propertyOrdering: ["score", "verdict", "corrections", "modelAnswer"],
+  required: ["score", "verdict", "corrections", "modelAnswer", "simpleAnswer"],
+  propertyOrdering: [
+    "score",
+    "verdict",
+    "corrections",
+    "modelAnswer",
+    "simpleAnswer",
+  ],
 };
 
 // A blank answer scores this without ever calling the API, so forfeits and
@@ -65,6 +74,7 @@ export const EMPTY_ANSWER_RESULT: GradeResult = {
   verdict: "No answer submitted.",
   corrections: [],
   modelAnswer: "",
+  simpleAnswer: "",
 };
 
 export async function gradeExplanation(
@@ -87,13 +97,17 @@ export async function gradeExplanation(
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
       contents: [
-        { role: "user", parts: [{ text: buildUserPrompt(topicPrompt, explanation) }] },
+        {
+          role: "user",
+          parts: [{ text: buildUserPrompt(topicPrompt, explanation) }],
+        },
       ],
       generationConfig: {
         temperature: 0.2,
         // Generous headroom: Gemini 3 may spend some output budget on internal
-        // "thinking" before the JSON, so keep this well above the answer size.
-        maxOutputTokens: 2048,
+        // "thinking" before the JSON, so keep this well above the answer size
+        // (which now carries both a model and a simple answer).
+        maxOutputTokens: 3072,
         responseMimeType: "application/json",
         responseSchema: RESPONSE_SCHEMA,
       },
@@ -137,7 +151,10 @@ export async function gradeExplanation(
   score = Math.max(1, Math.min(100, score));
 
   const corrections = Array.isArray(parsed.corrections)
-    ? parsed.corrections.map((c: unknown) => String(c)).filter(Boolean).slice(0, 5)
+    ? parsed.corrections
+        .map((c: unknown) => String(c))
+        .filter(Boolean)
+        .slice(0, 5)
     : [];
 
   return {
@@ -145,5 +162,6 @@ export async function gradeExplanation(
     verdict: String(parsed.verdict ?? "").trim(),
     corrections,
     modelAnswer: String(parsed.modelAnswer ?? "").trim(),
+    simpleAnswer: String(parsed.simpleAnswer ?? "").trim(),
   };
 }

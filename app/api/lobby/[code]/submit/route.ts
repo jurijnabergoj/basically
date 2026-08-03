@@ -108,6 +108,7 @@ export async function POST(
         verdict: grade.verdict,
         corrections: grade.corrections,
         modelAnswer: grade.modelAnswer,
+        simpleAnswer: grade.simpleAnswer,
       },
     })
     .eq("id", you.id)

@@ -6,6 +6,8 @@ import { countWords, capWords, WORD_LIMIT } from "@/lib/words";
 import {
   ALLOWED_ROUNDS,
   GRACE_SECONDS,
+  FORFEIT_WAIT_PRESENT_SECONDS,
+  FORFEIT_WAIT_ABSENT_SECONDS,
   READY_TIMEOUT_SECONDS,
   type RoundMode,
 } from "@/lib/lobby";
@@ -15,7 +17,14 @@ import { Footer } from "@/components/Footer";
 import { getClientId } from "@/lib/clientId";
 import { getSupabaseBrowser } from "@/lib/supabaseBrowser";
 
-type Grade = { verdict: string; corrections: string[]; modelAnswer: string };
+type Grade = {
+  verdict: string;
+  corrections: string[];
+  modelAnswer: string;
+  simpleAnswer?: string;
+};
+
+type ExplainMode = "simple" | "advanced";
 
 type LobbyView = {
   code: string;
@@ -91,6 +100,7 @@ export default function LobbyPage({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [explainMode, setExplainMode] = useState<ExplainMode>("advanced");
 
   // Host's best-of choice in the waiting room.
   const [selectedRounds, setSelectedRounds] = useState<RoundMode>(1);
@@ -339,20 +349,33 @@ export default function LobbyPage({
     }
   }, [remaining, view?.status, youSubmitted, doSubmit]);
 
-  // If I've submitted but the opponent went silent past the deadline (+ grace),
-  // nudge the reveal so the round can finalize with their forfeit.
+  // If I've submitted but the opponent hasn't past the deadline (+ grace), nudge
+  // the reveal so the round can finalize with their forfeit. Crucially, wait
+  // much longer while they still look connected: they may just be mid-grade on a
+  // genuine last-second answer, and forfeiting them here would clobber it. Once
+  // their own submit lands it finalizes the round and this never fires.
   useEffect(() => {
+    const forfeitWait = opponentPresent
+      ? FORFEIT_WAIT_PRESENT_SECONDS
+      : FORFEIT_WAIT_ABSENT_SECONDS;
     if (
       view?.status === "playing" &&
       youSubmitted &&
       remaining != null &&
-      remaining <= -(GRACE_SECONDS + 1) &&
+      remaining <= -(GRACE_SECONDS + forfeitWait) &&
       !view.opponent?.submitted &&
       !revealingRef.current
     ) {
       doReveal();
     }
-  }, [view?.status, youSubmitted, remaining, view?.opponent?.submitted, doReveal]);
+  }, [
+    view?.status,
+    youSubmitted,
+    remaining,
+    view?.opponent?.submitted,
+    opponentPresent,
+    doReveal,
+  ]);
 
   // Reset per-round local state whenever a fresh round begins.
   const roundKey = `${view?.status}:${view?.startedAt ?? ""}`;
@@ -368,6 +391,7 @@ export default function LobbyPage({
       setRetryUntil(null);
       setAnswer("");
       setError(null);
+      setExplainMode("advanced");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roundKey]);
@@ -817,16 +841,29 @@ export default function LobbyPage({
             />
           </div>
 
-          {(view.you.grade?.modelAnswer || view.opponent?.grade?.modelAnswer) && (
-            <div className={card}>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--accent-text)]">
-                How it actually works
-              </h3>
-              <p className="text-[15px] leading-relaxed text-[var(--text-body)]">
-                {view.you.grade?.modelAnswer || view.opponent?.grade?.modelAnswer}
-              </p>
-            </div>
-          )}
+          {(() => {
+            const grade = view.you.grade?.modelAnswer
+              ? view.you.grade
+              : view.opponent?.grade ?? null;
+            if (!grade?.modelAnswer) return null;
+            return (
+              <div className={card}>
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--accent-text)]">
+                    How it actually works
+                  </h3>
+                  {grade.simpleAnswer && (
+                    <ExplainToggle mode={explainMode} onChange={setExplainMode} />
+                  )}
+                </div>
+                <p className="text-[15px] leading-relaxed text-[var(--text-body)]">
+                  {explainMode === "simple" && grade.simpleAnswer
+                    ? grade.simpleAnswer
+                    : grade.modelAnswer}
+                </p>
+              </div>
+            );
+          })()}
 
           {oppGone && (
             <p className="rounded-md bg-[var(--hover)] px-3 py-2 text-center text-sm text-[var(--text-muted)]">
@@ -867,6 +904,35 @@ export default function LobbyPage({
       </main>
 
       <Footer />
+    </div>
+  );
+}
+
+// Segmented control to switch the model explanation between a plain-language
+// "simple" version and the precise "advanced" one.
+function ExplainToggle({
+  mode,
+  onChange,
+}: {
+  mode: ExplainMode;
+  onChange: (m: ExplainMode) => void;
+}) {
+  return (
+    <div className="inline-flex shrink-0 rounded-md border border-[var(--border)] p-0.5 text-xs font-semibold">
+      {(["simple", "advanced"] as const).map((m) => (
+        <button
+          key={m}
+          onClick={() => onChange(m)}
+          aria-pressed={mode === m}
+          className={`rounded px-2.5 py-1 capitalize transition ${
+            mode === m
+              ? "bg-[var(--accent)] text-[var(--accent-contrast)]"
+              : "text-[var(--text-muted)] hover:text-[var(--text)]"
+          }`}
+        >
+          {m}
+        </button>
+      ))}
     </div>
   );
 }
